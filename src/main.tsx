@@ -23,7 +23,7 @@ import ErrorBoundary from './components/ErrorBoundary.tsx'
 import './index.css'
 
 // Validate required environment variables
-const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID;
+const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '380b8103643344f9aa330eae7aacb13c';
 if (!projectId) {
   throw new Error('VITE_WALLETCONNECT_PROJECT_ID is required. Please check your .env file.');
 }
