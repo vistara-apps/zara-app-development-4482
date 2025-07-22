@@ -1,44 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
-import Dashboard from './components/Dashboard';
-import DAOVoting from './components/DAOVoting';
-import AISignals from './components/AISignals';
-import Portfolio from './components/Portfolio';
-import Subscription from './components/Subscription';
+import LoadingSpinner from './components/LoadingSpinner';
+import ErrorBoundary from './components/ErrorBoundary';
 import { AppProvider } from './contexts/AppContext';
+import * as LazyComponents from './components/LazyComponents';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'dao':
-        return <DAOVoting />;
-      case 'signals':
-        return <AISignals />;
-      case 'portfolio':
-        return <Portfolio />;
-      case 'subscription':
-        return <Subscription />;
-      default:
-        return <Dashboard />;
-    }
+    const ComponentMap = {
+      dashboard: LazyComponents.Dashboard,
+      dao: LazyComponents.DAOVoting,
+      signals: LazyComponents.AISignals,
+      portfolio: LazyComponents.Portfolio,
+      subscription: LazyComponents.Subscription,
+    };
+
+    const Component = ComponentMap[activeTab as keyof typeof ComponentMap] || LazyComponents.Dashboard;
+    
+    return (
+      <Suspense fallback={<LoadingSpinner size="lg" text="Loading..." className="py-12" />}>
+        <Component />
+      </Suspense>
+    );
   };
 
   return (
     <AppProvider>
-      <div className="min-h-screen bg-black">
-        <Header />
-        <div className="flex">
-          <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
-          <main className="flex-1 p-6">
-            {renderContent()}
-          </main>
+      <ErrorBoundary>
+        <div className="min-h-screen bg-black">
+          <Header />
+          <div className="flex">
+            <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
+            <main className="flex-1 p-6" role="main">
+              {renderContent()}
+            </main>
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
     </AppProvider>
   );
 }

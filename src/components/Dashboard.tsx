@@ -1,9 +1,23 @@
 import React from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { TrendingUp, Vote, DollarSign, AlertTriangle } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorBoundary from './ErrorBoundary';
 
 const Dashboard: React.FC = () => {
-  const { user, portfolio, daoVotes, aiSignals } = useAppContext();
+  const { user, portfolio, daoVotes, aiSignals, loading, error } = useAppContext();
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="card p-6 text-center">
+          <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-white mb-2">Error Loading Dashboard</h2>
+          <p className="text-gray-400">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   const stats = [
     {
@@ -53,14 +67,10 @@ const Dashboard: React.FC = () => {
                   <IconComponent className="w-5 h-5 text-white" />
                 </div>
                 <span className={`text-sm px-2 py-1 rounded ${
-                  stat.changeType === 'positive' ? 'text-green-400 bg-green-400' :
-                  stat.changeType === 'negative' ? 'text-red-400 bg-red-400' :
-                  'text-gray-400 bg-gray-800'
-                }`} style={{
-                  backgroundColor: stat.changeType === 'positive' ? 'rgba(74, 222, 128, 0.1)' :
-                                   stat.changeType === 'negative' ? 'rgba(248, 113, 113, 0.1)' :
-                                   'rgba(156, 163, 175, 0.1)'
-                }}>
+                  stat.changeType === 'positive' ? 'text-green-400 bg-green-400/10' :
+                  stat.changeType === 'negative' ? 'text-red-400 bg-red-400/10' :
+                  'text-gray-400 bg-gray-400/10'
+                }`}>
                   {stat.change}
                 </span>
               </div>
@@ -76,20 +86,16 @@ const Dashboard: React.FC = () => {
           <h3 className="text-xl font-semibold text-white mb-4">Recent DAO Activity</h3>
           <div className="space-y-3">
             {daoVotes.slice(0, 3).map((vote) => (
-              <div key={vote.id} className="flex items-center justify-between p-3 rounded-lg" style={{backgroundColor: 'rgba(31, 41, 55, 0.5)'}}>
+              <div key={vote.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50">
                 <div>
                   <p className="text-white font-medium">{vote.proposalTitle}</p>
                   <p className="text-gray-400 text-sm">{new Date(vote.timestamp).toLocaleDateString()}</p>
                 </div>
                 <span className={`px-2 py-1 rounded text-xs ${
-                  vote.voteOutcome === 'approved' ? 'text-green-400' :
-                  vote.voteOutcome === 'rejected' ? 'text-red-400' :
-                  'text-yellow-400'
-                }`} style={{
-                  backgroundColor: vote.voteOutcome === 'approved' ? 'rgba(74, 222, 128, 0.1)' :
-                                   vote.voteOutcome === 'rejected' ? 'rgba(248, 113, 113, 0.1)' :
-                                   'rgba(250, 204, 21, 0.1)'
-                }}>
+                  vote.voteOutcome === 'approved' ? 'text-green-400 bg-green-400/10' :
+                  vote.voteOutcome === 'rejected' ? 'text-red-400 bg-red-400/10' :
+                  'text-yellow-400 bg-yellow-400/10'
+                }`}>
                   {vote.voteOutcome}
                 </span>
               </div>
@@ -101,17 +107,13 @@ const Dashboard: React.FC = () => {
           <h3 className="text-xl font-semibold text-white mb-4">Latest AI Signals</h3>
           <div className="space-y-3">
             {aiSignals.slice(0, 3).map((signal) => (
-              <div key={signal.id} className="p-3 rounded-lg" style={{backgroundColor: 'rgba(31, 41, 55, 0.5)'}}>
+              <div key={signal.id} className="p-3 rounded-lg bg-gray-800/50">
                 <div className="flex items-center justify-between mb-2">
                   <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    signal.type === 'buy' ? 'text-green-400' :
-                    signal.type === 'sell' ? 'text-red-400' :
-                    'text-yellow-400'
-                  }`} style={{
-                    backgroundColor: signal.type === 'buy' ? 'rgba(74, 222, 128, 0.1)' :
-                                     signal.type === 'sell' ? 'rgba(248, 113, 113, 0.1)' :
-                                     'rgba(250, 204, 21, 0.1)'
-                  }}>
+                    signal.type === 'buy' ? 'text-green-400 bg-green-400/10' :
+                    signal.type === 'sell' ? 'text-red-400 bg-red-400/10' :
+                    'text-yellow-400 bg-yellow-400/10'
+                  }`}>
                     {signal.type.toUpperCase()}
                   </span>
                   <span className="text-gray-400 text-sm">{signal.confidence}%</span>

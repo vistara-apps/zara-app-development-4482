@@ -44,6 +44,15 @@ interface AppContextType {
   setAISignals: (signals: AISignal[]) => void;
   isSubscribed: boolean;
   setIsSubscribed: (subscribed: boolean) => void;
+  loading: {
+    user: boolean;
+    portfolio: boolean;
+    daoVotes: boolean;
+    aiSignals: boolean;
+  };
+  setLoading: (key: keyof AppContextType['loading'], value: boolean) => void;
+  error: string | null;
+  setError: (error: string | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -102,6 +111,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   ]);
 
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [loading, setLoadingState] = useState({
+    user: false,
+    portfolio: false,
+    daoVotes: false,
+    aiSignals: false,
+  });
+  const [error, setError] = useState<string | null>(null);
+
+  const setLoading = (key: keyof typeof loading, value: boolean) => {
+    setLoadingState(prev => ({ ...prev, [key]: value }));
+  };
 
   const value = {
     user,
@@ -113,7 +133,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     aiSignals,
     setAISignals,
     isSubscribed,
-    setIsSubscribed
+    setIsSubscribed,
+    loading,
+    setLoading,
+    error,
+    setError
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
