@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../contexts/AppContext';
-import { TrendingUp, TrendingDown, Minus, RefreshCw, Brain } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, RefreshCw, Brain, AlertCircle, CheckCircle } from 'lucide-react';
 import { usePaymentContext } from '../hooks/usePaymentContext';
+import LoadingSpinner from './LoadingSpinner';
 
 const AISignals: React.FC = () => {
   const { aiSignals, isSubscribed, setIsSubscribed } = useAppContext();
   const [isGenerating, setIsGenerating] = useState(false);
-  const { createSession } = usePaymentContext();
+  const { createSession, loading: paymentLoading, error: paymentError, success: paymentSuccess, reset: resetPayment } = usePaymentContext();
 
   const handleSubscribe = async () => {
     try {
@@ -14,9 +15,19 @@ const AISignals: React.FC = () => {
       setIsSubscribed(true);
     } catch (error) {
       console.error('Subscription failed:', error);
-      alert('Subscription failed. Please try again.');
+      // Error is already handled by usePaymentContext
     }
   };
+
+  // Reset payment state when component unmounts or subscription succeeds
+  useEffect(() => {
+    if (paymentSuccess) {
+      const timer = setTimeout(() => {
+        resetPayment();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [paymentSuccess, resetPayment]);
 
   const generateNewSignal = async () => {
     if (!isSubscribed) {
@@ -86,25 +97,50 @@ const AISignals: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="p-4 rounded-lg" style={{backgroundColor: 'rgba(31, 41, 55, 0.5)'}}>
+            <div className="p-4 rounded-lg bg-gray-800/50">
               <TrendingUp className="w-8 h-8 text-green-400 mx-auto mb-2" />
               <h3 className="font-semibold text-white">Smart Recommendations</h3>
               <p className="text-sm text-gray-400">AI-powered buy/sell signals</p>
             </div>
-            <div className="p-4 rounded-lg" style={{backgroundColor: 'rgba(31, 41, 55, 0.5)'}}>
+            <div className="p-4 rounded-lg bg-gray-800/50">
               <Brain className="w-8 h-8 text-blue-400 mx-auto mb-2" />
               <h3 className="font-semibold text-white">DAO Integration</h3>
               <p className="text-sm text-gray-400">Analysis based on governance votes</p>
             </div>
-            <div className="p-4 rounded-lg" style={{backgroundColor: 'rgba(31, 41, 55, 0.5)'}}>
+            <div className="p-4 rounded-lg bg-gray-800/50">
               <RefreshCw className="w-8 h-8 text-purple-400 mx-auto mb-2" />
               <h3 className="font-semibold text-white">Real-time Updates</h3>
               <p className="text-sm text-gray-400">Live market analysis</p>
             </div>
           </div>
 
-          <button className="btn-primary text-lg px-8 py-3" onClick={handleSubscribe}>
-            Subscribe for $9.99/month
+          {paymentError && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5 text-red-400" />
+              <span className="text-red-400">{paymentError}</span>
+            </div>
+          )}
+          
+          {paymentSuccess && (
+            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center space-x-2">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              <span className="text-green-400">Payment successful! Activating subscription...</span>
+            </div>
+          )}
+
+          <button 
+            className="btn-primary text-lg px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed" 
+            onClick={handleSubscribe}
+            disabled={paymentLoading}
+          >
+            {paymentLoading ? (
+              <div className="flex items-center space-x-2">
+                <LoadingSpinner size="sm" />
+                <span>Processing Payment...</span>
+              </div>
+            ) : (
+              'Subscribe for $9.99/month'
+            )}
           </button>
         </div>
       </div>
